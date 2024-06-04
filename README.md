@@ -20,6 +20,8 @@
 
 ```
 npm install
+
+Запускает сервер для разработки
 npm run start
 ```
 
@@ -40,6 +42,23 @@ npm run build
 ```
 yarn build
 ```
+Для сборки для разработки
+npm run build:dev
+
+Запускает Webpack в режиме наблюдения
+npm run watch
+
+Запуск линтера
+npm run lint
+
+Запуск линтера с параментором fix
+npm run lint:fix
+
+Запускает форматирование через prettier
+npm run format
+
+Запуск развертывания приложния на git pages
+npm run deploy
 
 ## Описание базовых классов
 
