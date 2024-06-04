@@ -45,32 +45,88 @@ yarn build
 
 api.ts
 
-Тип ApiListResponse на вход принимает тип и показывает количество элементов и список элементов типа, который подается на вход
+1. Класс Api
 
-Тип ApiPostMethods хранит в себе три запроса - 'POST', 'PUT' и 'DELETE'
+baseUrl - строка содержащая URL
+options - объект с дополнительными опциями для запросов
 
-Класс Api имеет baseUrl, get, post.
-baseUrl - readonly поле,которое позволяет получить url, который мы указывали при создании класса
-get - метод выполняет get-запрос к указанному URI относительно базового URL экземпляра класса
-post - метод выполняет post-запрос к указанному URI относительно базового URL экземпляра класса и отправляет data
+constructor(baseUrl: string, options: RequestInit = {}) - инициализирует класс принимая базовую URL и опциональные настройки для запроса
+
+Методы
+
+protected handleResponse(response: Response) - обработчик ответа от сервера. Проверяет статус ответа от сервер и возращает данные в формате JSON. В случае ошибки, возвращает сообщение об ошибке
+
+get(uri: string) - выполняет get-запрос по uri относительно базовой URL
+
+post(uri: string, data: object, method: ApiPostMethods = 'POST') - выполняет post запрос по указаному uri. Принимает данные data для отправки в теле запроса
+
 
 events.ts
 
-Тип EventName хранит в себе строку или RegExp(регулярные выражения)
+2. class EventEmitter implements IEvents
+_events: Map<EventName, Set<Subscriber>> - хранит события, ключи - имена событий, а значения - множества обработчиков
+constructor - инициализирует _events
 
-Тип Subscriber хранит в себе название фунции
+Методы
 
-Тип EmitterEvent хранит в себе название события и данные
+on<T extends object>(eventName: EventName, callback: (event: T) => void) - подписывает обработчик события callback на событие event. Обработчик будет получать данные типа T.
 
-Интерфейс IEvents содержит в себе 3 метода: on, emit, trigger
-on - позволяет подписаться на событие по предоставленным данным - EventName и возвращает данные об обновленном пользователе
-emit - генерирует событие с пользовательскими типами данных, event - название; data - необязательно, но информация об event
-trigger - позволяет генерировать событие с контекстомн
+off(eventName: EventName, callback: Subscriber) - отписывает обработчик события callback от события even
 
-класс EventEmitter реализует интерфейс IEvent
-позволяет установить обработчик на событие с помощью on
-позволяет снять обработчик с события с помощью off
-позволяет инициировать событие с данными с помощью emit
-так же можно слушать все события с помощью onAll
-или сбросить все обработчики с помощью offAll
-и сделать коллбек триггер, генерирующий событие при вызове с помощью trigger
+emit<T extends object>(eventName: string, data?: T) - инициирует event с data
+
+onAll(callback: (event: EmitterEvent) => void) - подписывает обработчик callback на все события
+
+offAll() - сбрасывает все обработчики событий
+
+trigger<T extends object>(eventName: string, context?: Partial<T>): (data: T) => void - генерирует событие event с данными из data и context
+
+3. class Product implements IProduct 
+реализует интерфейс IProduct
+
+4. class Order implements IOrder
+реализует интерфейс IOrder
+
+## Ключевые типы данных
+
+api.ts
+
+1. type ApiListResponse<Type> = {
+    total: number,
+    items: Type[]
+}; описывает структуру ответа от API содержащего массив элементов типа Type и общее количество элементов
+
+2. type ApiPostMethods = 'POST' | 'PUT' | 'DELETE'; перечисление допустимых методов
+
+events.ts
+ 
+3. type EventName = string | RegExp; тип события, который может быть строкой или регулярным выражением
+
+4. type Subscriber = Function; функция, которая будет вызываться при наступлении события
+
+5. type EmitterEvent = {
+    eventName: string,
+    data: unknown
+}; объект описывающий события, eventName - имя события, data - данные
+
+6. interface IEvents
+on<T extends object>(event: EventName, callback: (data: T) => void) - получает данные типа T и подписывает обработчик события callback на event
+
+emit<T extends object>(event: string, data?: T) - инициирует event с data
+
+trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void - генерирует событие event с данными из data и context
+
+index.ts 
+
+7. type Category =
+	| 'софт-скил'
+	| 'другое'
+	| 'дополнительное'
+	| 'кнопка'
+	| 'хард-скил'; перечисление основных видов продуктов
+
+8. type PaymentType = 'Онлайн' | 'При получении'; - перечисление допустимых видов оплаты
+
+9. interface IProduct - описывает структуру данных продукта
+
+10. interface IOrder - описывает структуру данных заказа
