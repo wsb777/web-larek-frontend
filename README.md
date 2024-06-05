@@ -11,7 +11,7 @@
 - src/pages/index.html — HTML-файл главной страницы
 - src/types/index.ts — файл с типами
 - src/index.ts — точка входа приложения
-- src/styles/styles.scss — корневой файл стилей
+- scss/styles/styles.scss — корневой файл стилей
 - src/utils/constants.ts — файл с константами
 - src/utils/utils.ts — файл с утилитами
 
@@ -43,109 +43,252 @@ npm run build
 yarn build
 ```
 Для сборки для разработки
+```
 npm run build:dev
+```
 
 Запускает Webpack в режиме наблюдения
+```
 npm run watch
+```
 
 Запуск линтера
+```
 npm run lint
+```
 
 Запуск линтера с параментором fix
+```
 npm run lint:fix
-
+```
 Запускает форматирование через prettier
+```
 npm run format
-
+```
 Запуск развертывания приложния на git pages
+```
 npm run deploy
+```
 
 ## Описание базовых классов
 
-api.ts
+### api.ts
 
-1. Класс Api
+_**class Api**_\
+Содержит в себе базовую логику отправки запросов. В конструктор передается базовый адрес сервера и опциональный объект с заголовками запросов.
 
-baseUrl - строка содержащая URL
-options - объект с дополнительными опциями для запросов
+`baseUrl` - строка содержащая URL
 
-constructor(baseUrl: string, options: RequestInit = {}) - инициализирует класс принимая базовую URL и опциональные настройки для запроса
+`options` - объект с дополнительными опциями для запросов
 
-Методы
+`constructor(baseUrl: string, options: RequestInit = {})` - инициализирует класс принимая базовую URL и опциональные настройки для запроса
 
-protected handleResponse(response: Response) - обработчик ответа от сервера. Проверяет статус ответа от сервер и возращает данные в формате JSON. В случае ошибки, возвращает сообщение об ошибке
+	Методы
 
-get(uri: string) - выполняет get-запрос по uri относительно базовой URL
+- `protected handleResponse(response: Response)` - обработчик ответа от сервера. Проверяет статус ответа от сервер и возращает данные в формате JSON. В случае ошибки, возвращает сообщение об ошибке
 
-post(uri: string, data: object, method: ApiPostMethods = 'POST') - выполняет post запрос по указаному uri. Принимает данные data для отправки в теле запроса
+- `get(uri: string)` - выполняет get-запрос по uri относительно базовой URL
+
+- `post(uri: string, data: object, method: ApiPostMethods = 'POST')` - выполняет post запрос по указаному uri. Принимает данные data для отправки в теле запроса
 
 
-events.ts
+### events.ts
 
-2. class EventEmitter implements IEvents
-_events: Map<EventName, Set<Subscriber>> - хранит события, ключи - имена событий, а значения - множества обработчиков
+**_class EventEmitter implements IEvents_**\
+Брокер событий позволяет отправлять события и подписываться на события, происходящие в системе. Класс используется в презентере для обработки событий и в слоях приложения для генерации событий.  
+
+`_events: Map<EventName, Set<Subscriber>>` - хранит события, ключи - имена событий, а значения - множества обработчиков
 constructor - инициализирует _events
 
-Методы
+	Методы
 
-on<T extends object>(eventName: EventName, callback: (event: T) => void) - подписывает обработчик события callback на событие event. Обработчик будет получать данные типа T.
+- `on<T extends object>(eventName: EventName, callback: (event: T) => void)` - подписывает обработчик события callback на событие event. Обработчик будет получать данные типа T.
 
-off(eventName: EventName, callback: Subscriber) - отписывает обработчик события callback от события even
+- `off(eventName: EventName, callback: Subscriber)` - отписывает обработчик события callback от события even
 
-emit<T extends object>(eventName: string, data?: T) - инициирует event с data
+- `emit<T extends object>(eventName: string, data?: T)` - инициирует event с data
 
-onAll(callback: (event: EmitterEvent) => void) - подписывает обработчик callback на все события
+- `onAll(callback: (event: EmitterEvent) => void)` - подписывает обработчик callback на все события
 
-offAll() - сбрасывает все обработчики событий
+- `offAll()` - сбрасывает все обработчики событий
 
-trigger<T extends object>(eventName: string, context?: Partial<T>): (data: T) => void - генерирует событие event с данными из data и context
+- `trigger<T extends object>(eventName: string, context?: Partial<T>): (data: T) => void` - генерирует событие event с данными из data и context
 
-3. class Product implements IProduct 
-реализует интерфейс IProduct
+_**class Product implements IProduct**_
 
-4. class Order implements IOrder
-реализует интерфейс IOrder
+Отвечает за хранение и логику работы с данными продукта.\
+Конструктор класса принимает инстант брокера событий\
+В полях класса хранятся следующие данные:\
+- `_id: number;` - уникальный идентификатор продукта
+- `name: string;` - имя продукта
+- `category: Category;` - категория продукта
+- `description: string;` - описание продукта
+- `image: string | Blob;` - изображение продукта
+- `price: number;` - цена продукта
+
+		Методы
+- `addProduct(_id: number, name: string, price: number): void` - добавляет продукт в корзину
+
+
+_**class Order implements IOrder**_
+
+Отвечает за хранение и логику работы с корзиной.\
+Конструктор класса принимает инстант брокера событий\
+В полях класса хранятся следующие данные:\
+- `_id: number;` - уникальный заказа
+- `paymentType: PaymentType;` - способ оплаты
+- `address: string;` - адресс
+- `email: string;` - email
+- `phone: number;`- номер телефона
+- `products: IProduct[];` - массив продуктов, добавленных в корзину
+
+		Методы
+- `deleteProduct(productId: number): void` - удаляет продукт из корзину
+
+_**class Modal**_\
+Реализует модальное окно. Так же предоставляет методы `open` и `close` для управления отображением модального окна. Устанавливает слушатели на клавиатуру, для закрытия модального окна по Esc, на клик в оверлей и кнопку-крестик для закрытия попапа.
+
+`constructor(selector: string, events: IEvents)` Конструктор принимает селектор, по которому в разметке страницы будет идентифицировано модальное окно и экземпляр класса `EventEmitter` для возможности инициации событий.
+Поля класса
+- modal: HTMLElement - элемент модального окна
+- events: IEvents - брокер событий
+
+#### _**class ModalProduct**_\
+#### Расширяет класс Modal. Предназначен для реализации модального окна продукта. При открытии модального окна получает информацию о продукте добавленных и дает добавить его в корзину. При сабмите инициирует событие передаваемое данные о товаре.\
+#### Поля класса:
+- addButton: HTMLButtonElement - Кнопка для добавления товара
+- productData: информация о продукте
+
+		Методы
+- setData(IProduct) - заполняет атрибуты продукта данными
+- addProduct() - метод добавления продукта в корзину
+- render() - метод возвращает заполненые атрибуты продукта
+
+_**class ModalBasket**_\
+Расширяет класс Modal. Предназначен для реализации окна корзины. При открытии модального окна получает информацию о продуктах добавленных в корзину и дает возможность удалить не нужные товары. При сабмите инициирует событие передаваемое данные о товарах и их общей стоимости, а так же переводит на модальное окно доставки заказа.\
+Поля класса:
+- checkoutButton: HTMLButtonElement - Кнопка для оформления заказа
+- deleteButton: HTMLButtonELement - Кнопка для удаления товара
+- productList: HTMLUlElement - Лист продуктов, добавленных в корзину
+- productsData: информация о продуктах
+
+
+		Методы
+- setData(IProductData) - заполняет атрибуты продуктов, соответвующими данными
+- checkout() - делает переход к оформлению заказа
+- deleteProduct() - удаляет продукт
+- render() - отображает информацию о добавленных продуктах
+
+_**class ModalDelivery**_\
+Расширяет класс Modal. Предназначен для реализации окна формы доставки заказа. При открытии модального окна выводит способы оплаты и поле для заполнения(указания адресса). При сабмите инициирует событие передаваемое данные о способе оплаты и адрессе, а так же переводит на модальное окно контактов.
+
+Поля класса:
+- addressField: HTMLInputElement - поле для заполнения адресса
+- onlineButton: HTMLButtonElement - выбор онлайн оплаты
+- offlineButton: HTMLButtonElement - выбор оплаты при получении
+- nextButton: HTMLButtonElement - переход к следующей форме
+
+		Методы
+- activeStatus() - делает возможным для выбора только одну кнопку
+- sendDelivery() - отправляет полученную информацию и делает переход на следующую форму
+
+_**class ModalContacts**_\
+Расширяет класс Modal. Предназначен для реализации окна формы контактов заказчика. При открытии модального окна выводит два поля, для телефона и электронной почты. При сабмите инициирует событие передаваемое данные о номере телефона и адрессе электронной почты, а так же переводит на модальное окно о статусе заказа.
+
+Поля класса:
+- phoneField: HTMLInputElement - поле для заполнения номера телефона
+- emailField: HTMLInputElement - поле для ввода адресса электронной почты
+- nextButton: HTMLButtonElement - переход к следующей форме
+
+		Методы
+- sendContacts() - отправляет полученную информацию и делает переход на следующую форму
+
+_**class ModalStatus**_\
+Расширяет класс Modal. Предназначен для реализации окна формы статуса заказа. При открытии модального окна выводит общую сумму заказа и отображает кнопку перехода на главную страницу. При сабмите инициирует событие передаваемое для перехода на главную страницу.
+
+Поля класса:
+- cost: HTMLPElement - текстовое значение расходов
+- nextButton: HTMLButtonElement - переход на главную
+
+		Методы
+- goMainPage() - отправляет покупателя на главную страницу
 
 ## Ключевые типы данных
 
-api.ts
+### api.ts
 
-1. type ApiListResponse<Type> = {
+1. `type ApiListResponse<Type> = {
     total: number,
     items: Type[]
-}; описывает структуру ответа от API содержащего массив элементов типа Type и общее количество элементов
+};` 
+- описывает структуру ответа от API содержащего массив элементов типа Type и общее количество элементов
 
-2. type ApiPostMethods = 'POST' | 'PUT' | 'DELETE'; перечисление допустимых методов
+2. `type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';` 
+- перечисление допустимых методов
 
-events.ts
+### events.ts
  
-3. type EventName = string | RegExp; тип события, который может быть строкой или регулярным выражением
+3. `type EventName = string | RegExp;` 
+- тип события, который может быть строкой или регулярным выражением
 
-4. type Subscriber = Function; функция, которая будет вызываться при наступлении события
+4. `type Subscriber = Function; `
+- функция, которая будет вызываться при наступлении события
 
-5. type EmitterEvent = {
+5. `type EmitterEvent = {
     eventName: string,
     data: unknown
-}; объект описывающий события, eventName - имя события, data - данные
+};` 
+- объект описывающий события, eventName - имя события, data - данные
 
-6. interface IEvents
-on<T extends object>(event: EventName, callback: (data: T) => void) - получает данные типа T и подписывает обработчик события callback на event
+6. `interface IEvents`
+- `on<T extends object>(event: EventName, callback: (data: T) => void)` - получает данные типа T и подписывает обработчик события callback на event
 
-emit<T extends object>(event: string, data?: T) - инициирует event с data
+- `emit<T extends object>(event: string, data?: T)` - инициирует event с data
 
-trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void - генерирует событие event с данными из data и context
+- `trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void` - генерирует событие event с данными из data и context
 
-index.ts 
+### index.ts
 
-7. type Category =
+7. `type Category =
 	| 'софт-скил'
 	| 'другое'
 	| 'дополнительное'
 	| 'кнопка'
-	| 'хард-скил'; перечисление основных видов продуктов
+	| 'хард-скил';` 
+	
+- перечисление основных видов продуктов
 
-8. type PaymentType = 'Онлайн' | 'При получении'; - перечисление допустимых видов оплаты
+8. `type PaymentType = 'Онлайн' | 'При получении';` 
 
-9. interface IProduct - описывает структуру данных продукта
+- перечисление допустимых видов оплаты
 
-10. interface IOrder - описывает структуру данных заказа
+9. `interface IProduct` 
+
+- описывает структуру данных продукта
+
+10. `interface IOrder` 
+- описывает структуру данных заказа
+
+11. `type TProductCardInfo = Pick<IProduct, 'category' | 'name' | 'image' | 'price'>;`
+
+- Этот тип описывает информацию для отображения карточки продукта
+
+12. `type TProductInfo = Pick<IProduct, 'category' | 'name' | 'description' | 'price' | 'image'>;`
+
+- Этот тип описывает более подробную информацию для отображения модального окна продукта
+
+13. `type TProductOrder = Pick<IProduct, 'name' | 'price'>`
+
+- Этот тип описывает данные продукта в корзине
+
+14. `type TOrderBasket = Pick<IOrder, 'products'>;`
+
+- Этот тип описывает продукты в модельном окне корзины
+
+15. `type TOrderDelivery = Pick<IOrder, 'paymentType' | 'address'>;`
+
+- Этот тип описывает отображение модального окна первой части оформления заказа, где надо указать способ оплаты и адрес
+
+16. `type TOrderContacts = Pick <IOrder, 'email' | 'phone'>;`
+
+- Этот тип описывает второе модальное окно оформления заказа, где надо указать свои контакты - телефон и почту
