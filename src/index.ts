@@ -10,11 +10,16 @@ import { PreviewBasket } from './components/View/basketPreview';
 import { PreviewProduct } from './components/View/productView';
 import { ContactForm, PaymentForm, Successful } from './components/View/formPreview';
 
+// Добрый день! Про ООП вы имели ввиду, что нужно вместо document.querySelector использовать что то из utils?
+
+// СОЗДАНИЕ КЛАССОВ
 const events = new EventEmitter();
 const baseApi: type.IApi = new Api(API_URL, settings);
 const api = new AppApi(baseApi);
 const products = new ProductData(events);
 const order = new Order();
+
+// НАХОЖДЕНИЕ НУЖНЫХ ТЕМПЛЕЙТОВ И ЭЛЕМЕНТОВ
 const productTemplate: HTMLTemplateElement = document.querySelector('#card-catalog');
 const productPreviewTemplate: HTMLTemplateElement = document.querySelector('#card-preview');
 const basketPreviewTemplate: HTMLTemplateElement = document.querySelector('#basket');
@@ -24,19 +29,21 @@ const payment:HTMLElement = document.querySelector('.modal .payment');
 const contacts:HTMLElement = document.querySelector('.modal .contact');
 const success:HTMLElement = document.querySelector('.modal .order-success');
 
+// СОЗДАНИЕ КЛАССОВ ФОРМ
 const paymentForm = new PaymentForm(payment.closest('.modal'),events,document.querySelector('#order'));
 const contactsForm = new ContactForm(contacts.closest('.modal'),events,document.querySelector('#contacts'));
 const successForm = new Successful(success.closest('.modal'),events,document.querySelector('#success'));
 
+// СОЗДАНИЕ ПЕРВЬЮ ДЛЯ ПРОДУКТОВ
 const productPreview = new PreviewProduct(cardForm.closest('.modal'), events, productPreviewTemplate);
 const basketPreview = new PreviewBasket(basketForm.closest('.modal'), events, basketPreviewTemplate);
-const basket = document.querySelector('.header__basket');
-basket.addEventListener('click', () => events.emit('basket:open'));
 
 // events.onAll((event) => {
 //     console.log(event.eventName, event.data)
 // })
 
+// СБОР ДАННЫХ ДЛЯ ГАЛЛЕРЕИ
+const gallery  = document.querySelector('.gallery');
 Promise.all([api.getProducts()])
 	.then(([productList]) => {
 		products.products = productList
@@ -46,16 +53,16 @@ Promise.all([api.getProducts()])
 		console.error(err);
 	});
 
-	events.on('products:loaded', () => {
-		products.products.forEach((product) => {
-		  const newProduct = new Product(productTemplate, events);
-		  newProduct.setData(product);
-		  gallery.append(newProduct.render());
-		});
-	  });
+// ВЫВОД НА СТРАНИЦУ ВСЕХ ПРОДУКТОВ
+events.on('products:loaded', () => {
+	products.products.forEach((product) => {
+		const newProduct = new Product(productTemplate, events);
+		newProduct.setData(product);
+		gallery.append(newProduct.render());
+	});
+	});
 
-const gallery  = document.querySelector('.gallery');
-
+// ВЫВОД ПРЕВЬЮ О ПРОДУКТЕ
 events.on('product:selected', (data: { product: Product }) => {
 	const { product } = data;
 	const { title, price, description, category, image, id} = products.getProduct( product.id );
@@ -65,30 +72,36 @@ events.on('product:selected', (data: { product: Product }) => {
 	productPreview.open();
 });
 
+// ДОБАВЛЕНИЕ ПРОДУКТА В КОРЗИНУ
 events.on(`product:toBasket`, (data: {product: string}) => {
 	const id = data.product;
 	order.setProduct(products.getProduct(id));
 	basketPreview.renderCount(order.getCount());
 })
 
+// ОТКРЫТИЕ КОРЗИНЫ
 events.on('basket:open', () => {
 	basketPreview.setData(order);
 	basketPreview.renderSum(order.sumProducts());
 	basketPreview.open();
 })
 
+// УДАЛЕНИЕ ПРОДУКТА
 events.on('product:delete', (data:{product: type.IProduct})=> {
 	const productData = data.product;
 	order.deleteProduct(productData.id);
+	basketPreview.setData(order);
 	basketPreview.renderSum(order.sumProducts());
 })
 
+// ПЕРЕХОД К ЗАКАЗУ
 events.on('payment:on', () => {
 	basketPreview.close();
 	paymentForm.render();
 	paymentForm.open();
 })
 
+// ПЕРЕХОД К КОНТАКТАМ
 events.on('payment:click', (data:{payment:string, address:string}) => {
 	order.setAddress(data.address);
 	order.setPayment(data.payment);
@@ -96,6 +109,7 @@ events.on('payment:click', (data:{payment:string, address:string}) => {
 	contactsForm.open();
 })
 
+// ОТПРАВКА ЗАКАЗА
 events.on('buy:on', (data : {phone:string, email:string}) => {
 	order.setEmail(data.email);
 	order.setPhone(data.phone)
@@ -103,5 +117,11 @@ events.on('buy:on', (data : {phone:string, email:string}) => {
 	api.sendOrder(order.makePost());
 	successForm.setSum(order.sumProducts());
 	order.clearProducts();
-	successForm.open()
+	basketPreview.renderCount(order.getCount());
+	successForm.open();
+})
+
+// ЗАКРЫТИЕ ФОРМЫ УСПЕШНОЙ ПОКУПКИ
+events.on('continue', () => {
+	successForm.close();
 })

@@ -20,8 +20,24 @@ export class ContactForm extends Modal<IContactForm> {
     this.contactForm = cloneTemplate(template);
     this.content.replaceChildren(this.contactForm);
     this.inputEmail = this.contactForm.querySelector('input[name="email"]');
+    this.buyButton = this.contactForm.querySelector('.button');
+    this.inputEmail.addEventListener('input', () => {
+      if (this.inputEmail.validity.valid || this.inputNumber.validity.valid) {
+        this.buyButton.removeAttribute('disabled');
+      }
+      else {
+        this.buyButton.setAttribute('disabled', 'true');
+      }
+    })
     this.inputNumber = this.contactForm.querySelector('input[name="phone"]');
-    this.buyButton = this.contactForm.querySelector('.order__button');
+    this.inputNumber.addEventListener('input', () => {
+      if (this.inputEmail.validity.valid || this.inputNumber.validity.valid) {
+        this.buyButton.removeAttribute('disabled');
+      }
+      else {
+        this.buyButton.setAttribute('disabled', 'true');
+      }
+    })
     this.contactForm.addEventListener('submit', (evt) => {
       const data = {
         phone: this.inputNumber.value,
@@ -53,18 +69,46 @@ export class PaymentForm extends Modal<IPaymentForm> {
     this.content = this.container.querySelector(".modal__content");
     this.paymentForm = cloneTemplate(template);
     this.content.replaceChildren(this.paymentForm);
-    this.card = this.paymentForm.querySelector('button[name="card"]')
-    this.cash = this.paymentForm.querySelector('button[name="cash"]')
+    this.card = this.paymentForm.querySelector('button[name="card"]');
+    this.cash = this.paymentForm.querySelector('button[name="cash"]');
     this.buttonNext = this.paymentForm.querySelector('.order__button');
     this.input = this.paymentForm.querySelector('.form__input');
     console.log(this.paymentForm);
+    this.input.addEventListener('input', () => {
+      if (this.input.validity.valid && (this.card.classList.contains('button_alt-active') || this.cash.classList.contains('button_alt-active'))) {
+        this.buttonNext.removeAttribute('disabled');
+      }
+      else {
+        this.buttonNext.setAttribute('disabled', 'true');
+      }
+    })
 
     this.card.addEventListener('click', () => {
       this.paymentType = 'online';
+      this.card.classList.add('button_alt-active');
+      if (this.cash.classList.contains('button_alt-active')) {
+        this.cash.classList.remove('button_alt-active');
+      }
+      if (this.input.validity.valid) {
+        this.buttonNext.removeAttribute('disabled');
+      }
+      else {
+        this.buttonNext.setAttribute('disabled', 'true');
+      }
     })
 
     this.cash.addEventListener('click', () => {
       this.paymentType = 'offline';
+      this.cash.classList.add('button_alt-active');
+      if (this.card.classList.contains('button_alt-active')) {
+        this.card.classList.remove('button_alt-active');
+      }
+      if (this.input.validity.valid ) {
+        this.buttonNext.removeAttribute('disabled');
+      }
+      else {
+        this.buttonNext.setAttribute('disabled', 'true');
+      }
     })
 
     this.paymentForm.addEventListener('submit', (evt) => {
@@ -96,14 +140,18 @@ export class Successful extends Modal<Successful> {
     this.content = this.container.querySelector(".modal__content");
     this.success = cloneTemplate(template);
     this.content.replaceChildren(this.success);
+    
     this.sum = this.success.querySelector('.order-success__description');
     this.continueButton = this.success.querySelector('.order-success__close');
     this.success.addEventListener('submit', (evt) => {
       evt.preventDefault();
-      super.close();
+    })
+    this.continueButton.addEventListener('click', (evt) => {
+      evt.preventDefault();
+      this.events.emit('continue');
     })
   }
   setSum(data: number) {
-    this.sum.textContent = "Списано " + String(data) + "синапсов"
+    this.sum.textContent = "Списано " + String(data) + " синапсов"
   }
 }

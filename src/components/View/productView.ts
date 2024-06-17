@@ -15,6 +15,7 @@ export class PreviewProduct extends Modal<IPreviewProduct> {
 	private id: string;
 	private element: HTMLElement;
 	private content: HTMLElement;
+	private price: number;
 
 
 	constructor(container: HTMLElement, events: IEvents, template: HTMLTemplateElement) {
@@ -31,7 +32,7 @@ export class PreviewProduct extends Modal<IPreviewProduct> {
 		this.button.addEventListener('click', () => {
 			this.events.emit(`product:toBasket`, { product: this.id })
 			this.button.setAttribute('disabled', 'false');
-			this.button.textContent = "В коризине";
+			this.button.textContent = "В корзине";
 		});
 	}
 	set contentData({ title, description, image, category, price, id }: { title: string, description: string, image: string; category: string; price: number; id: string }) {
@@ -40,26 +41,43 @@ export class PreviewProduct extends Modal<IPreviewProduct> {
 		this.titleElement.textContent = title;
 		this.descriptionElement.textContent = description;
 		this.categoryElement.textContent = category;
-		this.priceElement.textContent = String(price) + " синапсов";
+		this.price = price;
+		if (price === null) {
+			this.priceElement.textContent = "Бесценно";
+		}
+		else {
+			this.priceElement.textContent = String(price) + " синапсов";
+		}
+
 		this.id = id
 		switch (category) {
 			case "софт-скил": {
+				this.categoryElement.classList.remove(...this.categoryElement.classList);
+				this.categoryElement.classList.add('card__category');
 				this.categoryElement.classList.add('card__category_soft');
 				break;
 			}
 			case "кнопка": {
+				this.categoryElement.classList.remove(...this.categoryElement.classList);
+				this.categoryElement.classList.add('card__category');
 				this.categoryElement.classList.add('card__category_button');
 				break;
 			}
 			case "дополнительное": {
+				this.categoryElement.classList.remove(...this.categoryElement.classList);
+				this.categoryElement.classList.add('card__category');
 				this.categoryElement.classList.add('card__category_additional');
 				break;
 			}
 			case "другое": {
+				this.categoryElement.classList.remove(...this.categoryElement.classList);
+				this.categoryElement.classList.add('card__category');
 				this.categoryElement.classList.add('card__category_other');
 				break;
 			}
 			case "хард-скил": {
+				this.categoryElement.classList.remove(...this.categoryElement.classList);
+				this.categoryElement.classList.add('card__category');
 				this.categoryElement.classList.add('card__category_hard');
 				break;
 			}
@@ -70,10 +88,15 @@ export class PreviewProduct extends Modal<IPreviewProduct> {
 	checkButton(solution: boolean) {
 		if (solution === true) {
 			this.button.setAttribute('disabled', 'false');
-			this.button.textContent = "В коризину";
+			this.button.textContent = "В корзине";
 		}
 		else {
+			this.button.textContent = "В корзину";
 			this.button.removeAttribute('disabled');
+		}
+		if (this.price === null) {
+			this.button.textContent = "Бесценно";
+			this.button.setAttribute('disabled', 'false');
 		}
 	}
 }

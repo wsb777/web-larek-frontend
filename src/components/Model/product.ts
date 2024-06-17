@@ -28,7 +28,12 @@ export class Product {
 
 	setData(productData: Partial<type.IProduct>) {
 		this.productId = productData.id;
-		this.price.textContent = String(productData.price) + " синапсов";
+		if (productData.price === null) {
+			this.price.textContent = "Бесценно"
+		}
+		else {
+			this.price.textContent = String(productData.price) + " синапсов";
+		}
 		this.category.textContent = String(productData.category);
 		switch (productData.category) {
 			case "софт-скил": {

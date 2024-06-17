@@ -29,6 +29,8 @@ export class PreviewBasket extends Modal<IPreviewBasket> {
     this.button = this.element.querySelector('.button');
     this.button.addEventListener('click', () => this.events.emit('payment:on'))
     this.productsCount = document.querySelector('.header__basket-counter');
+    const basket = document.querySelector('.header__basket');
+    basket.addEventListener('click', () => events.emit('basket:open'));
   }
 
   setData(data: IOrder) {
@@ -55,6 +57,12 @@ export class PreviewBasket extends Modal<IPreviewBasket> {
     }
 
     super.open();
+  }
+  renderIndex(data: IOrder) {
+    const productsIndex = document.querySelectorAll(".basket__item-index");
+    for (let i = 0; i < data.products.length; i++) {
+      productsIndex[i].textContent =  String(i + 1);
+    }
   }
   renderCount(data: number) {
     this.productsCount.textContent = String(data);

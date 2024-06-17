@@ -36,15 +36,15 @@ export class Order implements type.IOrder {
 	}
 
 	deleteProduct(productId: string) {
-		const index = this.products.findIndex((item) => item.id === productId);
-
-		if (index !== -1) {
-			this.products.splice(index, 1);
-			console.log(this.products);
+		const productIndex = this.products.findIndex(product => product.id === productId);
+		if (productIndex !== -1) {
+		  this.products.splice(productIndex, 1);
+		  this.sumProducts();
+		  return true;
 		} else {
-			console.error(`Product with ID ${productId} not found`);
+		  return false;
 		}
-	}
+	  }
 
 	checkProduct(productId: string) {
 		const productFound = this.products.find(product => product.id === productId);
@@ -54,6 +54,7 @@ export class Order implements type.IOrder {
 			return false;
 		}
 	}
+
 	setEmail(data: string) {
 		this.email = data
 	}
