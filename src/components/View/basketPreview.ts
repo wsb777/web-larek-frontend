@@ -19,6 +19,8 @@ export class PreviewBasket extends Modal<IPreviewBasket> {
   private list: HTMLElement;
   private button: HTMLElement;
   private productsCount: HTMLElement;
+  private cardBasketTemplate:HTMLTemplateElement;
+  private basketPrice:HTMLElement
 
   constructor(container: HTMLElement, events: IEvents, template: HTMLTemplateElement) {
     super(container, events)
@@ -31,6 +33,8 @@ export class PreviewBasket extends Modal<IPreviewBasket> {
     this.productsCount = document.querySelector('.header__basket-counter');
     const basket = document.querySelector('.header__basket');
     basket.addEventListener('click', () => events.emit('basket:open'));
+    this.cardBasketTemplate = document.querySelector('#card-basket');
+    this.basketPrice = this.element.querySelector('.basket__price')
   }
 
   setData(data: IOrder) {
@@ -38,8 +42,7 @@ export class PreviewBasket extends Modal<IPreviewBasket> {
       this.list.innerHTML = "";
       this.button.removeAttribute('disabled');
       for (let i = 0; i < data.products.length; i++) {
-        const template: HTMLTemplateElement = document.querySelector('#card-basket');
-        const basketItem = cloneTemplate(template);
+        const basketItem = cloneTemplate(this.cardBasketTemplate);
         basketItem.querySelector('.basket__item-index').textContent = String(i + 1);
         basketItem.querySelector('.card__title').textContent = data.products[i].title;
         basketItem.querySelector('.card__price').textContent = String(data.products[i].price) + " синапсов";
@@ -58,17 +61,12 @@ export class PreviewBasket extends Modal<IPreviewBasket> {
 
     super.open();
   }
-  renderIndex(data: IOrder) {
-    const productsIndex = document.querySelectorAll(".basket__item-index");
-    for (let i = 0; i < data.products.length; i++) {
-      productsIndex[i].textContent =  String(i + 1);
-    }
-  }
+
   renderCount(data: number) {
     this.productsCount.textContent = String(data);
   }
 
   renderSum(data: number) {
-    this.element.querySelector('.basket__price').textContent = String(data) + " синапсов";
+    this.basketPrice.textContent = String(data) + " синапсов";
   }
 }

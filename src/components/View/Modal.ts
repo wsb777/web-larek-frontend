@@ -21,13 +21,12 @@ export class Modal<T> extends Component<T> {
   }
 
   open() {
-    this.page.classList.add('page__wrapper_locked');
     this.container.classList.add("modal_active");
     document.addEventListener("keyup", this.handleEscUp);
+    this.events.emit("modal:open")
   }
 
   close() {
-    this.page.classList.remove('page__wrapper_locked')
     this.container.classList.remove("modal_active");
     this.events.emit('modal:close')
     document.removeEventListener("keyup", this.handleEscUp);

@@ -2,6 +2,7 @@ import { EventEmitter, IEvents } from "../base/events";
 import * as type from "../../types";
 import { cloneTemplate } from "../../utils/utils";
 import { CDN_URL } from "../../utils/constants";
+import { Component } from "../base/component";
 
 export class Product {
 	protected element: HTMLElement;
@@ -10,16 +11,23 @@ export class Product {
 	protected price: HTMLElement;
 	protected image: HTMLImageElement;
 	protected productId: string;
-	protected category: HTMLElement;
+	protected _category: HTMLElement;
 	protected events: IEvents;
 	protected description: string;
+	protected _categoryColor = <Record<string, string>> { // описания категории
+		"софт-скил": "soft",
+		"другое": "other",
+		"дополнительное": "additional",
+		"кнопка": "button",
+		"хард-скил": "hard"
+	  }
 
 	constructor(template: HTMLTemplateElement, events: IEvents) {
 		this.events = events;
 		this.element = cloneTemplate(template);
 		this.button = this.element.querySelector('.card');
 		this.title = this.element.querySelector('.card__title');
-		this.category = this.element.querySelector('.card__category');
+		this._category = this.element.querySelector('.card__category');
 		this.price = this.element.querySelector('.card__price');
 		this.image = this.element.querySelector('.card__image');
 
@@ -34,33 +42,13 @@ export class Product {
 		else {
 			this.price.textContent = String(productData.price) + " синапсов";
 		}
-		this.category.textContent = String(productData.category);
-		switch (productData.category) {
-			case "софт-скил": {
-				this.category.classList.add('card__category_soft');
-				break;
-			}
-			case "кнопка": {
-				this.category.classList.add('card__category_button');
-				break;
-			}
-			case "дополнительное": {
-				this.category.classList.add('card__category_additional');
-				break;
-			}
-			case "другое": {
-				this.category.classList.add('card__category_other');
-				break;
-			}
-			case "хард-скил": {
-				this.category.classList.add('card__category_hard');
-				break;
-			}
-		}
+		this._category.textContent = String(productData.category);
+		this._category.classList.toggle(`card__category_${this._categoryColor[productData.category]}`)
 		this.title.textContent = String(productData.title);
 		this.image.src = CDN_URL + productData.image;
 		this.description = productData.description;
 	}
+
 
 	get id() {
 		return this.productId;
