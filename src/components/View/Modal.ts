@@ -14,7 +14,7 @@ export class Modal<IModalData> extends Component<IModalData> {
   constructor(container: HTMLElement, events: IEvents) {
     super(container);
     this.events = events;
-    const closeButtonElement = container.querySelector(".modal__close");
+    const closeButtonElement = ensureElement<HTMLButtonElement>(".modal__close", container);
     closeButtonElement.addEventListener("click", this.close.bind(this));
     this._content = ensureElement<HTMLElement>('.modal__content', container);
     this.container.addEventListener("mousedown", (evt) => {
@@ -29,13 +29,13 @@ export class Modal<IModalData> extends Component<IModalData> {
   }
 
   open() {
-    this.container.classList.add("modal_active");
+    this.toggleClass(this.container,"modal_active", true);
     document.addEventListener("keyup", this.handleEscUp);
     this.events.emit("modal:open")
   }
 
   close() {
-    this.container.classList.remove("modal_active");
+    this.toggleClass(this.container,"modal_active", false);
     this.events.emit('modal:close')
     document.removeEventListener("keyup", this.handleEscUp);
   }
