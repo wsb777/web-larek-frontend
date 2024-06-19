@@ -96,6 +96,7 @@ events.on('product:delete', (data:{product: type.IProduct})=> {
 	order.deleteProduct(productData.id);
 	basketPreview.setData(order,events);
 	basketPreview.renderSum(order.sumProducts());
+	page.counter = order.getCount();
 })
 
 //ПЕРЕХОД К ЗАКАЗУ

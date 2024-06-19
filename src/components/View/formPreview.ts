@@ -1,8 +1,7 @@
-import { cloneTemplate } from "../../utils/utils";
+import { ensureElement } from "../../utils/utils";
 import { Component } from "../base/component";
 import { IEvents } from "../base/events";
 import { Form } from "./Form";
-import { Modal } from "./Modal";
 
 export interface IContactForm {
   contactForm: HTMLFormElement;
@@ -17,8 +16,8 @@ export class ContactForm extends Form<IContactForm> {
 
   constructor(container: HTMLFormElement, protected events: IEvents) {
     super(container, events);
-    this.inputEmail = this.container.querySelector('input[name="email"]');
-    this.buyButton = this.container.querySelector('.button');
+    this.inputEmail = ensureElement<HTMLInputElement>('input[name="email"]', this.container);
+    this.buyButton = ensureElement<HTMLButtonElement>('.button', this.container);
     this.inputEmail.addEventListener('input', () => {
       if (this.inputEmail.validity.valid && this.inputNumber.validity.valid) {
         this.buyButton.removeAttribute('disabled');
@@ -27,7 +26,7 @@ export class ContactForm extends Form<IContactForm> {
         this.buyButton.setAttribute('disabled', 'true');
       }
     })
-    this.inputNumber = this.container.querySelector('input[name="phone"]');
+    this.inputNumber = ensureElement<HTMLInputElement>('input[name="phone"]', this.container);
     this.inputNumber.addEventListener('input', () => {
       if (this.inputEmail.validity.valid && this.inputNumber.validity.valid) {
         this.buyButton.removeAttribute('disabled');
@@ -65,11 +64,10 @@ export class PaymentForm extends Form<IPaymentForm> {
 
   constructor(container: HTMLFormElement, protected events: IEvents) {
     super(container, events);
-    this.card = this.container.querySelector('button[name="card"]');
-    this.cash = this.container.querySelector('button[name="cash"]');
-    console.log(this.container)
-    this.buttonNext = this.container.querySelector('.order__button');
-    this.input = this.container.querySelector('.form__input');
+    this.card = ensureElement<HTMLButtonElement>('button[name="card"]', this.container);
+    this.cash = ensureElement<HTMLButtonElement>('button[name="cash"]', this.container);
+    this.buttonNext = ensureElement<HTMLButtonElement>('.order__button', this.container);
+    this.input = ensureElement<HTMLInputElement>('.form__input', this.container);
     this.input.addEventListener('input', () => {
       if (this.input.validity.valid && (this.card.classList.contains('button_alt-active') || this.cash.classList.contains('button_alt-active'))) {
         this.buttonNext.removeAttribute('disabled');
@@ -81,10 +79,8 @@ export class PaymentForm extends Form<IPaymentForm> {
 
     this.card.addEventListener('click', () => {
       this.paymentType = 'online';
-      this.card.classList.add('button_alt-active');
-      if (this.cash.classList.contains('button_alt-active')) {
-        this.cash.classList.remove('button_alt-active');
-      }
+      this.toggleClass(this.card,'button_alt-active',true)
+      this.toggleClass(this.cash,'button_alt-active',false)
       if (this.input.validity.valid) {
         this.buttonNext.removeAttribute('disabled');
       }
@@ -95,10 +91,8 @@ export class PaymentForm extends Form<IPaymentForm> {
 
     this.cash.addEventListener('click', () => {
       this.paymentType = 'offline';
-      this.cash.classList.add('button_alt-active');
-      if (this.card.classList.contains('button_alt-active')) {
-        this.card.classList.remove('button_alt-active');
-      }
+      this.toggleClass(this.card,'button_alt-active',false)
+      this.toggleClass(this.cash,'button_alt-active',true)
       if (this.input.validity.valid ) {
         this.buttonNext.removeAttribute('disabled');
       }
@@ -134,14 +128,14 @@ export class Successful extends Component<Successful> {
   constructor(container: HTMLElement, protected events: IEvents) {
     super(container);
     
-    this.sum = this.container.querySelector('.order-success__description');
-    this.continueButton = this.container.querySelector('.order-success__close');
+    this.sum = ensureElement<HTMLElement>('.order-success__description', this.container);
+    this.continueButton = ensureElement<HTMLButtonElement>('.order-success__close', this.container);
     this.continueButton.addEventListener('click', (evt) => {
       this.events.emit('continue');
     })
   }
   setSum(data: number) {
-    this.sum.textContent = "Списано " + String(data) + " синапсов"
+    this.setText(this.sum, "Списано " + String(data) + " синапсов")
   }
   get success () {
     return this.container
