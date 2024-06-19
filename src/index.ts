@@ -26,11 +26,12 @@ const order = new Order();
 const page = new Page(document.body, events);
 
 // НАХОЖДЕНИЕ НУЖНЫХ ТЕМПЛЕЙТОВ И ЭЛЕМЕНТОВ
-const productTemplate: HTMLTemplateElement = document.querySelector('#card-catalog');
-const productPreviewTemplate: HTMLTemplateElement = document.querySelector('#card-preview');
+const productTemplate= ensureElement<HTMLTemplateElement>('#card-catalog');
+
+const productPreviewTemplate=ensureElement<HTMLTemplateElement>('#card-preview');
 const basketPreviewTemplate=ensureElement<HTMLTemplateElement>('#basket');
-const modal:HTMLElement = document.querySelector('.modal')
-const contactsFormTemplate:HTMLTemplateElement = document.querySelector('#contacts')
+const modal=ensureElement<HTMLElement>('.modal')
+const contactsFormTemplate=ensureElement<HTMLTemplateElement>('#contacts')
 const paymentFormTemplate = ensureElement<HTMLTemplateElement>('#order')
 const classModal = new Modal(modal, events);
 const successfulTemplate = ensureElement<HTMLTemplateElement>('#success')
@@ -40,8 +41,6 @@ const basketPreview = new PreviewBasket(cloneTemplate(basketPreviewTemplate), ev
 const paymentForm = new PaymentForm(cloneTemplate(paymentFormTemplate), events);
 const contactsForm = new ContactForm(cloneTemplate(contactsFormTemplate), events);
 const successForm = new Successful(cloneTemplate(successfulTemplate), events);
-const productPreview = new PreviewProduct(cloneTemplate(productPreviewTemplate), events);
-
 
 // events.onAll((event) => {
 //     console.log(event.eventName, event.data)
@@ -67,6 +66,7 @@ events.on('products:loaded', () => {
     });
 // ВЫВОД ПРЕВЬЮ О ПРОДУКТЕ
 events.on('product:selected', (data: { product: Product }) => {
+	const productPreview = new PreviewProduct(cloneTemplate(productPreviewTemplate), events);
 	const { product } = data;
 	const { title, price, description, category, image, id} = products.getProduct( product.id );
 	const contentData = {title, price, description, category, image, id};

@@ -1,9 +1,8 @@
 import { IPreviewProduct } from "../../types";
 import { CDN_URL } from "../../utils/constants";
-import { cloneTemplate } from "../../utils/utils";
+import { ensureElement } from "../../utils/utils";
 import { Component } from "../base/component";
 import { IEvents } from "../base/events";
-import { Modal } from "./Modal";
 
 
 export class PreviewProduct extends Component<IPreviewProduct> {
@@ -12,87 +11,63 @@ export class PreviewProduct extends Component<IPreviewProduct> {
 	private descriptionElement: HTMLElement;
 	private categoryElement: HTMLElement;
 	private priceElement: HTMLElement;
-	private button: HTMLElement;
+	private button: HTMLButtonElement;
 	private id: string;
 	element: HTMLElement;
 	private price: number;
 	_card:HTMLElement;
+	protected _categoryColor = <Record<string, string>> { // описания категории
+		"софт-скил": "soft",
+		"другое": "other",
+		"дополнительное": "additional",
+		"кнопка": "button",
+		"хард-скил": "hard"
+	  }
 
 
 	constructor(container: HTMLElement, events: IEvents) {
 		super(container)
-		this.titleElement = this.container.querySelector(".card__title");
-		this.imageElement = this.container.querySelector(".card__image");
-		this.descriptionElement = this.container.querySelector(".card__text");
-		this.categoryElement = this.container.querySelector(".card__category");
-		this.priceElement = this.container.querySelector(".card__price");
-		this.button = this.container.querySelector(".card__button");
+		this.titleElement = ensureElement<HTMLElement>(".card__title", this.container);
+		this.imageElement = ensureElement<HTMLImageElement>(".card__image", this.container);
+		this.descriptionElement = ensureElement<HTMLElement>(".card__text", this.container);
+		this.categoryElement = ensureElement<HTMLElement>(".card__category", this.container);
+		this.priceElement = ensureElement<HTMLElement>(".card__price", this.container);
+		this.button = ensureElement<HTMLButtonElement>(".card__button", this.container);
 		this.button.addEventListener('click', () => {
 			events.emit(`product:toBasket`, { product: this.id })
 			this.button.setAttribute('disabled', 'false');
-			this.button.textContent = "В корзине";
+			this.setText(this.button,"В корзине");
 		});
 	}
 
 	set contentData({ title, description, image, category, price, id }: { title: string, description: string, image: string; category: string; price: number; id: string }) {
 		this.imageElement.src = CDN_URL + image;
 		this.imageElement.alt = `Изображение ${title}`;
-		this.titleElement.textContent = title;
-		this.descriptionElement.textContent = description;
-		this.categoryElement.textContent = category;
+		this.setText(this.titleElement, title);
+		this.setText(this.descriptionElement, description);
+		this.setText(this.categoryElement, category);
 		this.price = price;
 		if (price === null) {
-			this.priceElement.textContent = "Бесценно";
+			this.setText(this.priceElement, "Бесценно");
 		}
 		else {
-			this.priceElement.textContent = String(price) + " синапсов";
+			this.setText(this.priceElement,String(price) + " синапсов");
 		}
 
-		this.id = id
-		switch (category) {
-			case "софт-скил": {
-				this.categoryElement.classList.remove(...this.categoryElement.classList);
-				this.categoryElement.classList.add('card__category');
-				this.categoryElement.classList.add('card__category_soft');
-				break;
-			}
-			case "кнопка": {
-				this.categoryElement.classList.remove(...this.categoryElement.classList);
-				this.categoryElement.classList.add('card__category');
-				this.categoryElement.classList.add('card__category_button');
-				break;
-			}
-			case "дополнительное": {
-				this.categoryElement.classList.remove(...this.categoryElement.classList);
-				this.categoryElement.classList.add('card__category');
-				this.categoryElement.classList.add('card__category_additional');
-				break;
-			}
-			case "другое": {
-				this.categoryElement.classList.remove(...this.categoryElement.classList);
-				this.categoryElement.classList.add('card__category');
-				this.categoryElement.classList.add('card__category_other');
-				break;
-			}
-			case "хард-скил": {
-				this.categoryElement.classList.remove(...this.categoryElement.classList);
-				this.categoryElement.classList.add('card__category');
-				this.categoryElement.classList.add('card__category_hard');
-				break;
-			}
-		}
+		this.id = id;
+		this.toggleClass(this.categoryElement,`card__category_${this._categoryColor[category]}`,true);
 	}
 	checkButton(solution: boolean) {
 		if (solution === true) {
 			this.button.setAttribute('disabled', 'false');
-			this.button.textContent = "В корзине";
+			this.setText(this.button, "В корзине");
 		}
 		else {
-			this.button.textContent = "В корзину";
+			this.setText(this.button, "В корзину");
 			this.button.removeAttribute('disabled');
 		}
 		if (this.price === null) {
-			this.button.textContent = "Бесценно";
+			this.setText(this.button, "Бесценно");
 			this.button.setAttribute('disabled', 'false');
 		}
 	}
