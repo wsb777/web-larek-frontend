@@ -32,7 +32,7 @@ const productPreviewTemplate=ensureElement<HTMLTemplateElement>('#card-preview')
 const basketPreviewTemplate=ensureElement<HTMLTemplateElement>('#basket');
 const contactsFormTemplate=ensureElement<HTMLTemplateElement>('#contacts')
 const paymentFormTemplate = ensureElement<HTMLTemplateElement>('#order')
-const classModal = new Modal(ensureElement<HTMLElement>('.modal'), events);
+const modal = new Modal(ensureElement<HTMLElement>('.modal'), events);
 const successfulTemplate = ensureElement<HTMLTemplateElement>('#success')
 
 // СОЗДАНИЕ КЛАССОВ
@@ -69,9 +69,9 @@ events.on('product:selected', (data: { product: Product }) => {
 	const { product } = data;
 	const { title, price, description, category, image, id} = products.getProduct( product.id );
 	const contentData = {title, price, description, category, image, id};
-	classModal.content = productPreview.render({ contentData });
+	modal.content = productPreview.render({ contentData });
 	productPreview.checkButton(order.checkProduct(product.id));
-	classModal.open()
+	modal.open()
 });
 
 // ДОБАВЛЕНИЕ ПРОДУКТА В КОРЗИНУ
@@ -85,8 +85,8 @@ events.on(`product:toBasket`, (data: {product: string}) => {
 events.on('basket:open', () => {
 	basketPreview.setData(order,events);
 	basketPreview.renderSum(order.sumProducts());
-	classModal.content = basketPreview.render();
-	classModal.open();
+	modal.content = basketPreview.render();
+	modal.open();
 })
 
 // УДАЛЕНИЕ ПРОДУКТА
@@ -100,14 +100,14 @@ events.on('product:delete', (data:{product: type.IProduct})=> {
 
 //ПЕРЕХОД К ЗАКАЗУ
 events.on('payment:on', () => {
-	classModal.content = paymentForm.render()
+	modal.content = paymentForm.render()
 })
 
 // ПЕРЕХОД К КОНТАКТАМ
 events.on('payment:click', (data:{payment:string, address:string}) => {
 	order.setAddress(data.address);
 	order.setPayment(data.payment);
-	classModal.content = contactsForm.render();
+	modal.content = contactsForm.render();
 })
 
 // ОТПРАВКА ЗАКАЗА
@@ -116,7 +116,7 @@ events.on('buy:on', (data : {phone:string, email:string}) => {
 	order.setPhone(data.phone)
 	api.sendOrder(order.makePost()).then( () => {
 		successForm.setSum(order.sumProducts());
-		classModal.content = successForm.render();
+		modal.content = successForm.render();
 		order.clearProducts();
 		page.counter = order.getCount();
 	}).catch(err => console.log(err))
@@ -124,7 +124,7 @@ events.on('buy:on', (data : {phone:string, email:string}) => {
 
 // ЗАКРЫТИЕ ФОРМЫ УСПЕШНОЙ ПОКУПКИ
 events.on('continue', () => {
-	classModal.close();
+	modal.close();
 })
 
 // Блокируем прокрутку страницы если открыта модалка
