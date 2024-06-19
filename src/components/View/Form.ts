@@ -10,14 +10,12 @@ interface IFormState {
 export class Form<T> extends Component<IFormState> {
     protected _submit: HTMLButtonElement;
     protected _errors: HTMLElement;
-    protected page:HTMLElement;
     
 
     constructor(protected container: HTMLFormElement, protected events: IEvents) {
         super(container);
 
         this._submit = ensureElement<HTMLButtonElement>('button[type=submit]', this.container);
-        this.page = document.querySelector('.page__wrapper')
 
         this.container.addEventListener('input', (e: Event) => {
             const target = e.target as HTMLInputElement;
