@@ -30,10 +30,9 @@ const productTemplate= ensureElement<HTMLTemplateElement>('#card-catalog');
 
 const productPreviewTemplate=ensureElement<HTMLTemplateElement>('#card-preview');
 const basketPreviewTemplate=ensureElement<HTMLTemplateElement>('#basket');
-const modal=ensureElement<HTMLElement>('.modal')
 const contactsFormTemplate=ensureElement<HTMLTemplateElement>('#contacts')
 const paymentFormTemplate = ensureElement<HTMLTemplateElement>('#order')
-const classModal = new Modal(modal, events);
+const classModal = new Modal(ensureElement<HTMLElement>('.modal'), events);
 const successfulTemplate = ensureElement<HTMLTemplateElement>('#success')
 
 // СОЗДАНИЕ КЛАССОВ
