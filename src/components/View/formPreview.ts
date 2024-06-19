@@ -64,9 +64,9 @@ export class PaymentForm extends Form<IPaymentForm> {
   paymentType: string;
   address: string;
 
-  constructor(container: HTMLFormElement, protected events: IEvents, template: HTMLTemplateElement,) {
+  constructor(container: HTMLFormElement, protected events: IEvents, template: HTMLTemplateElement, modal: HTMLElement) {
     super(container, events);
-    this.content = this.container.querySelector(".modal__content");
+    this.content = modal.querySelector(".modal__content");
     this.paymentForm = cloneTemplate(template);
     this.content.replaceChildren(this.paymentForm);
     this.card = this.paymentForm.querySelector('button[name="card"]');
@@ -127,25 +127,25 @@ export interface ISuccessful {
   continueButton: HTMLButtonElement;
 }
 
-export class Successful extends Modal<Successful> {
-  success: HTMLElement;
-  continueButton: HTMLButtonElement;
-  content: HTMLElement;
-  sum: HTMLElement;
+// export class Successful extends Modal<Successful> {
+//   success: HTMLElement;
+//   continueButton: HTMLButtonElement;
+//   _content: HTMLElement;
+//   sum: HTMLElement;
 
-  constructor(container: HTMLElement, protected events: IEvents, template: HTMLTemplateElement) {
-    super(container, events);
-    this.content = this.container.querySelector(".modal__content");
-    this.success = cloneTemplate(template);
-    this.content.replaceChildren(this.success);
+//   constructor(container: HTMLElement, protected events: IEvents, template: HTMLTemplateElement) {
+//     super(container, events);
+
+//     this.success = cloneTemplate(template);
+//     this._content.replaceChildren(this.success);
     
-    this.sum = this.success.querySelector('.order-success__description');
-    this.continueButton = this.success.querySelector('.order-success__close');
-    this.continueButton.addEventListener('click', (evt) => {
-      this.events.emit('continue');
-    })
-  }
-  setSum(data: number) {
-    this.sum.textContent = "Списано " + String(data) + " синапсов"
-  }
-}
+//     this.sum = this.success.querySelector('.order-success__description');
+//     this.continueButton = this.success.querySelector('.order-success__close');
+//     this.continueButton.addEventListener('click', (evt) => {
+//       this.events.emit('continue');
+//     })
+//   }
+//   setSum(data: number) {
+//     this.sum.textContent = "Списано " + String(data) + " синапсов"
+//   }
+// }
