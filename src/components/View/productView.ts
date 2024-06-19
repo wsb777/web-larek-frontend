@@ -1,11 +1,12 @@
 import { IPreviewProduct } from "../../types";
 import { CDN_URL } from "../../utils/constants";
 import { cloneTemplate } from "../../utils/utils";
+import { Component } from "../base/component";
 import { IEvents } from "../base/events";
 import { Modal } from "./Modal";
 
 
-export class PreviewProduct extends Modal<IPreviewProduct> {
+export class PreviewProduct extends Component<IPreviewProduct> {
 	private titleElement: HTMLElement;
 	private imageElement: HTMLImageElement;
 	private descriptionElement: HTMLElement;
@@ -13,28 +14,26 @@ export class PreviewProduct extends Modal<IPreviewProduct> {
 	private priceElement: HTMLElement;
 	private button: HTMLElement;
 	private id: string;
-	private element: HTMLElement;
-	private content: HTMLElement;
+	element: HTMLElement;
 	private price: number;
+	_card:HTMLElement;
 
 
-	constructor(container: HTMLElement, events: IEvents, template: HTMLTemplateElement) {
-		super(container, events)
-		this.element = cloneTemplate(template);
-		this.content = this.container.querySelector(".modal__content")
-		this.content.replaceChildren(this.element);
-		this.titleElement = this.element.querySelector(".card__title");
-		this.imageElement = this.element.querySelector(".card__image");
-		this.descriptionElement = this.element.querySelector(".card__text");
-		this.categoryElement = this.element.querySelector(".card__category");
-		this.priceElement = this.element.querySelector(".card__price");
-		this.button = this.element.querySelector(".card__button");
+	constructor(container: HTMLElement, events: IEvents) {
+		super(container)
+		this.titleElement = this.container.querySelector(".card__title");
+		this.imageElement = this.container.querySelector(".card__image");
+		this.descriptionElement = this.container.querySelector(".card__text");
+		this.categoryElement = this.container.querySelector(".card__category");
+		this.priceElement = this.container.querySelector(".card__price");
+		this.button = this.container.querySelector(".card__button");
 		this.button.addEventListener('click', () => {
-			this.events.emit(`product:toBasket`, { product: this.id })
+			events.emit(`product:toBasket`, { product: this.id })
 			this.button.setAttribute('disabled', 'false');
 			this.button.textContent = "В корзине";
 		});
 	}
+
 	set contentData({ title, description, image, category, price, id }: { title: string, description: string, image: string; category: string; price: number; id: string }) {
 		this.imageElement.src = CDN_URL + image;
 		this.imageElement.alt = `Изображение ${title}`;
@@ -82,8 +81,6 @@ export class PreviewProduct extends Modal<IPreviewProduct> {
 				break;
 			}
 		}
-
-		super.open();
 	}
 	checkButton(solution: boolean) {
 		if (solution === true) {

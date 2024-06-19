@@ -8,8 +8,10 @@ import { AppApi } from './components/AppApi';
 import { API_URL, settings} from './utils/constants';
 import { PreviewBasket } from './components/View/basketPreview';
 import { PreviewProduct } from './components/View/productView';
-import { ContactForm, PaymentForm, } from './components/View/formPreview';
+import { ContactForm, PaymentForm, Successful, } from './components/View/formPreview';
 import { Page } from './components/Page';
+import { cloneTemplate, ensureElement } from './utils/utils';
+import { Modal } from './components/View/Modal';
 
 // Добрый вечер! Просмотрел полностью Оно тебе надо, больше понял об ООП, но хочется добить этот проект в такой логике. Следующий реализовать в более правильно ООП
 // Почитал про enum тут https://scriptdev.ru/guide/015/#_1 , правильно ли я понимаю, что его стоит использовать только в больших проектах? Такой вопрос, потому что как будто в нашем он усложит логику
@@ -26,19 +28,20 @@ const page = new Page(document.body, events);
 // НАХОЖДЕНИЕ НУЖНЫХ ТЕМПЛЕЙТОВ И ЭЛЕМЕНТОВ
 const productTemplate: HTMLTemplateElement = document.querySelector('#card-catalog');
 const productPreviewTemplate: HTMLTemplateElement = document.querySelector('#card-preview');
-const basketPreviewTemplate: HTMLTemplateElement = document.querySelector('#basket');
+const basketPreviewTemplate=ensureElement<HTMLTemplateElement>('#basket');
 const modal:HTMLElement = document.querySelector('.modal')
-// const cardForm:HTMLElement = document.querySelector('.modal .card');
-// const basketForm:HTMLElement = document.querySelector('.modal .basket');
-// const payment:HTMLElement = document.querySelector('.modal .payment');
-// const contacts:HTMLElement = document.querySelector('.modal .contact');
-// const success:HTMLElement = document.querySelector('.modal .order-success');
+const contactsFormTemplate:HTMLTemplateElement = document.querySelector('#contacts')
+const paymentFormTemplate = ensureElement<HTMLTemplateElement>('#order')
+const classModal = new Modal(modal, events);
+const successfulTemplate = ensureElement<HTMLTemplateElement>('#success')
 
+// СОЗДАНИЕ КЛАССОВ
+const basketPreview = new PreviewBasket(cloneTemplate(basketPreviewTemplate), events);
+const paymentForm = new PaymentForm(cloneTemplate(paymentFormTemplate), events);
+const contactsForm = new ContactForm(cloneTemplate(contactsFormTemplate), events);
+const successForm = new Successful(cloneTemplate(successfulTemplate), events);
+const productPreview = new PreviewProduct(cloneTemplate(productPreviewTemplate), events);
 
-// СОЗДАНИЕ КЛАССОВ ФОРМ
-// 
-// const contactsForm = new ContactForm(modal,events,document.querySelector('#contacts'));
-// const successForm = new Successful(modal,events,document.querySelector('#success'));
 
 // events.onAll((event) => {
 //     console.log(event.eventName, event.data)
@@ -64,13 +67,12 @@ events.on('products:loaded', () => {
     });
 // ВЫВОД ПРЕВЬЮ О ПРОДУКТЕ
 events.on('product:selected', (data: { product: Product }) => {
-	const productPreview = new PreviewProduct(modal, events, productPreviewTemplate);
 	const { product } = data;
 	const { title, price, description, category, image, id} = products.getProduct( product.id );
-	const contentData = {title, price, description, category, image, id}
-	productPreview.render({ contentData });
+	const contentData = {title, price, description, category, image, id};
+	classModal.content = productPreview.render({ contentData });
 	productPreview.checkButton(order.checkProduct(product.id));
-	productPreview.open();
+	classModal.open()
 });
 
 // ДОБАВЛЕНИЕ ПРОДУКТА В КОРЗИНУ
@@ -82,52 +84,48 @@ events.on(`product:toBasket`, (data: {product: string}) => {
 
 // ОТКРЫТИЕ КОРЗИНЫ
 events.on('basket:open', () => {
-	const basketPreview = new PreviewBasket(modal, events, basketPreviewTemplate);
-	basketPreview.setData(order);
+	basketPreview.setData(order,events);
 	basketPreview.renderSum(order.sumProducts());
-	basketPreview.open();
+	classModal.content = basketPreview.render();
+	classModal.open();
 })
 
 // УДАЛЕНИЕ ПРОДУКТА
 events.on('product:delete', (data:{product: type.IProduct})=> {
 	const productData = data.product;
 	order.deleteProduct(productData.id);
-	const basketPreview = new PreviewBasket(modal, events, basketPreviewTemplate);
-	basketPreview.setData(order);
+	basketPreview.setData(order,events);
 	basketPreview.renderSum(order.sumProducts());
 })
 
-// ПЕРЕХОД К ЗАКАЗУ
-// events.on('payment:on', () => {
-// 	const paymentForm = new PaymentForm(modal,events,document.querySelector('#order'),modal);
-// 	paymentForm.render()
-// })
+//ПЕРЕХОД К ЗАКАЗУ
+events.on('payment:on', () => {
+	classModal.content = paymentForm.render()
+})
 
 // ПЕРЕХОД К КОНТАКТАМ
-// events.on('payment:click', (data:{payment:string, address:string}) => {
-// 	order.setAddress(data.address);
-// 	order.setPayment(data.payment);
-// 	paymentForm.close();
-// 	contactsForm.open();
-// })
+events.on('payment:click', (data:{payment:string, address:string}) => {
+	order.setAddress(data.address);
+	order.setPayment(data.payment);
+	classModal.content = contactsForm.render();
+})
 
 // ОТПРАВКА ЗАКАЗА
-// events.on('buy:on', (data : {phone:string, email:string}) => {
-// 	order.setEmail(data.email);
-// 	order.setPhone(data.phone)
-// 	contactsForm.close();
-// 	api.sendOrder(order.makePost()).then( () => {
-// 		successForm.setSum(order.sumProducts());
-// 		order.clearProducts();
-// 		basketPreview.renderCount(order.getCount());
-// 		successForm.open();
-// 	}).catch(err => console.log(err))
-// })
+events.on('buy:on', (data : {phone:string, email:string}) => {
+	order.setEmail(data.email);
+	order.setPhone(data.phone)
+	api.sendOrder(order.makePost()).then( () => {
+		successForm.setSum(order.sumProducts());
+		classModal.content = successForm.render();
+		order.clearProducts();
+		page.counter = order.getCount();
+	}).catch(err => console.log(err))
+})
 
 // ЗАКРЫТИЕ ФОРМЫ УСПЕШНОЙ ПОКУПКИ
-// events.on('continue', () => {
-// 	successForm.close();
-// })
+events.on('continue', () => {
+	classModal.close();
+})
 
 // Блокируем прокрутку страницы если открыта модалка
 events.on('modal:open', () => {

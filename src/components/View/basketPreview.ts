@@ -1,6 +1,7 @@
 import { IOrder, IProduct, IProductsData } from "../../types";
-import { cloneTemplate, createElement } from "../../utils/utils";
+import { cloneTemplate, createElement, ensureElement } from "../../utils/utils";
 import { Order } from "../Model/order";
+import { Component } from "../base/component";
 import { IEvents } from "../base/events";
 import { Modal } from "./Modal";
 
@@ -12,43 +13,37 @@ interface IPreviewBasket {
 }
 
 
-export class PreviewBasket extends Modal<IPreviewBasket> {
+export class PreviewBasket extends Component<IPreviewBasket> {
 
-  private element: HTMLElement;
-  private content: HTMLElement;
   private list: HTMLElement;
-  private button: HTMLElement;
-  private productsCount: HTMLElement;
-  private cardBasketTemplate:HTMLTemplateElement;
-  private basketPrice:HTMLElement
+  private button: HTMLButtonElement;
+  private cardBasketTemplate: HTMLTemplateElement;
+  private basketPrice: HTMLElement;
+  private headerBasket: HTMLButtonElement;
 
-  constructor(container: HTMLElement, events: IEvents, template: HTMLTemplateElement) {
-    super(container, events)
-    this.element = cloneTemplate(template);
-    this.content = this.container.querySelector(".modal__content");
-    this.content.replaceChildren(this.element);
-    this.list = this.element.querySelector('.basket__list');
-    this.button = this.element.querySelector('.button');
-    this.button.addEventListener('click', () => this.events.emit('payment:on'))
-    this.productsCount = document.querySelector('.header__basket-counter');
-    const basket = document.querySelector('.header__basket');
-    basket.addEventListener('click', () => events.emit('basket:open'));
-    this.cardBasketTemplate = document.querySelector('#card-basket');
-    this.basketPrice = this.element.querySelector('.basket__price')
+  constructor(container: HTMLElement, events: IEvents) {
+    super(container)
+    this.list = ensureElement<HTMLElement>('.basket__list', this.container);
+    this.button = ensureElement<HTMLButtonElement>('.button', this.container);
+    this.button.addEventListener('click', () => events.emit('payment:on'))
+    this.headerBasket = ensureElement<HTMLButtonElement>('.header__basket');
+    this.headerBasket.addEventListener('click', () => events.emit('basket:open'));
+    this.cardBasketTemplate = ensureElement<HTMLTemplateElement>('#card-basket');
+    this.basketPrice = ensureElement<HTMLElement>('.basket__price', this.container)
   }
 
-  setData(data: IOrder) {
+  setData(data: IOrder, events: IEvents) {
     if (data.products.length) {
       this.list.innerHTML = "";
       this.button.removeAttribute('disabled');
       for (let i = 0; i < data.products.length; i++) {
         const basketItem = cloneTemplate(this.cardBasketTemplate);
-        basketItem.querySelector('.basket__item-index').textContent = String(i + 1);
-        basketItem.querySelector('.card__title').textContent = data.products[i].title;
-        basketItem.querySelector('.card__price').textContent = String(data.products[i].price) + " синапсов";
-        const button = basketItem.querySelector('.basket__item-delete');
+        this.setText(ensureElement<HTMLElement>('.basket__item-index', basketItem), String(i + 1));
+        this.setText(ensureElement<HTMLElement>('.card__title', basketItem), data.products[i].title);
+        this.setText(ensureElement<HTMLElement>('.card__price', basketItem), String(data.products[i].price) + " синапсов");
+        const button = ensureElement<HTMLButtonElement>('.basket__item-delete', basketItem);
         button.addEventListener('click', () => {
-          this.events.emit('product:delete', { product: data.products[i] })
+          events.emit('product:delete', { product: data.products[i] })
           basketItem.remove()
         });
         this.list.append(basketItem);
@@ -58,15 +53,9 @@ export class PreviewBasket extends Modal<IPreviewBasket> {
       this.button.setAttribute('disabled', 'false');
       this.list.replaceChildren(createElement<HTMLParagraphElement>('p', { textContent: 'Корзина пуста' }));
     }
-
-    super.open();
-  }
-
-  renderCount(data: number) {
-    this.productsCount.textContent = String(data);
   }
 
   renderSum(data: number) {
-    this.basketPrice.textContent = String(data) + " синапсов";
+    this.setText(this.basketPrice, String(data) + " синапсов")
   }
 }

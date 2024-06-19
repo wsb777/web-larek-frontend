@@ -1,23 +1,31 @@
+import { ensureElement } from "../../utils/utils";
 import { Component } from "../base/component";
 import { IEvents } from "../base/events";
 
-export class Modal<T> extends Component<T> {
+interface IModalData {
+  content: HTMLElement;
+}
+
+export class Modal<IModalData> extends Component<IModalData> {
   protected modal: HTMLElement;
   protected events: IEvents;
-  protected page: HTMLElement;
+  protected _content: HTMLElement;
 
   constructor(container: HTMLElement, events: IEvents) {
     super(container);
     this.events = events;
-    this.page = document.querySelector('.page__wrapper')
-    const closeButtonElement = this.container.querySelector(".modal__close");
+    const closeButtonElement = container.querySelector(".modal__close");
     closeButtonElement.addEventListener("click", this.close.bind(this));
+    this._content = ensureElement<HTMLElement>('.modal__content', container);
     this.container.addEventListener("mousedown", (evt) => {
       if (evt.target === evt.currentTarget) {
         this.close();
       }
     });
     this.handleEscUp = this.handleEscUp.bind(this);
+  }
+  set content(value: HTMLElement) {
+    this._content.replaceChildren(value);
   }
 
   open() {

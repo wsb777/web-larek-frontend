@@ -1,4 +1,5 @@
 import { cloneTemplate } from "../../utils/utils";
+import { Component } from "../base/component";
 import { IEvents } from "../base/events";
 import { Form } from "./Form";
 import { Modal } from "./Modal";
@@ -10,18 +11,14 @@ export interface IContactForm {
 
 export class ContactForm extends Form<IContactForm> {
   content: HTMLElement;
-  contactForm: HTMLFormElement;
   inputEmail: HTMLInputElement;
   inputNumber: HTMLInputElement;
   buyButton: HTMLButtonElement;
 
-  constructor(container: HTMLFormElement, protected events: IEvents, template: HTMLTemplateElement) {
+  constructor(container: HTMLFormElement, protected events: IEvents) {
     super(container, events);
-    this.content = this.container.querySelector(".modal__content");
-    this.contactForm = cloneTemplate(template);
-    this.content.replaceChildren(this.contactForm);
-    this.inputEmail = this.contactForm.querySelector('input[name="email"]');
-    this.buyButton = this.contactForm.querySelector('.button');
+    this.inputEmail = this.container.querySelector('input[name="email"]');
+    this.buyButton = this.container.querySelector('.button');
     this.inputEmail.addEventListener('input', () => {
       if (this.inputEmail.validity.valid && this.inputNumber.validity.valid) {
         this.buyButton.removeAttribute('disabled');
@@ -30,7 +27,7 @@ export class ContactForm extends Form<IContactForm> {
         this.buyButton.setAttribute('disabled', 'true');
       }
     })
-    this.inputNumber = this.contactForm.querySelector('input[name="phone"]');
+    this.inputNumber = this.container.querySelector('input[name="phone"]');
     this.inputNumber.addEventListener('input', () => {
       if (this.inputEmail.validity.valid && this.inputNumber.validity.valid) {
         this.buyButton.removeAttribute('disabled');
@@ -39,13 +36,16 @@ export class ContactForm extends Form<IContactForm> {
         this.buyButton.setAttribute('disabled', 'true');
       }
     })
-    this.contactForm.addEventListener('submit', (evt) => {
+    this.container.addEventListener('submit', (evt) => {
       const data = {
         phone: this.inputNumber.value,
         email: this.inputEmail.value
       }
       this.events.emit('buy:on', data)
     })
+  }
+  get form() {
+    return this.container;
   }
 }
 
@@ -56,7 +56,6 @@ export interface IPaymentForm {
 
 export class PaymentForm extends Form<IPaymentForm> {
   content: HTMLElement;
-  paymentForm: HTMLFormElement;
   card: HTMLButtonElement;
   cash: HTMLButtonElement;
   buttonNext: HTMLButtonElement;
@@ -64,15 +63,13 @@ export class PaymentForm extends Form<IPaymentForm> {
   paymentType: string;
   address: string;
 
-  constructor(container: HTMLFormElement, protected events: IEvents, template: HTMLTemplateElement, modal: HTMLElement) {
+  constructor(container: HTMLFormElement, protected events: IEvents) {
     super(container, events);
-    this.content = modal.querySelector(".modal__content");
-    this.paymentForm = cloneTemplate(template);
-    this.content.replaceChildren(this.paymentForm);
-    this.card = this.paymentForm.querySelector('button[name="card"]');
-    this.cash = this.paymentForm.querySelector('button[name="cash"]');
-    this.buttonNext = this.paymentForm.querySelector('.order__button');
-    this.input = this.paymentForm.querySelector('.form__input');
+    this.card = this.container.querySelector('button[name="card"]');
+    this.cash = this.container.querySelector('button[name="cash"]');
+    console.log(this.container)
+    this.buttonNext = this.container.querySelector('.order__button');
+    this.input = this.container.querySelector('.form__input');
     this.input.addEventListener('input', () => {
       if (this.input.validity.valid && (this.card.classList.contains('button_alt-active') || this.cash.classList.contains('button_alt-active'))) {
         this.buttonNext.removeAttribute('disabled');
@@ -110,7 +107,7 @@ export class PaymentForm extends Form<IPaymentForm> {
       }
     })
 
-    this.paymentForm.addEventListener('submit', (evt) => {
+    this.container.addEventListener('submit', (evt) => {
       this.address = this.input.value;
       const data = {
         payment: this.paymentType,
@@ -119,6 +116,9 @@ export class PaymentForm extends Form<IPaymentForm> {
       this.events.emit(`payment:click`, data);
     })
   }
+  get form() {
+    return this.container
+  }
 
 }
 
@@ -126,26 +126,24 @@ export interface ISuccessful {
   success: HTMLElement;
   continueButton: HTMLButtonElement;
 }
+export class Successful extends Component<Successful> {
+  continueButton: HTMLButtonElement;
+  _content: HTMLElement;
+  sum: HTMLElement;
 
-// export class Successful extends Modal<Successful> {
-//   success: HTMLElement;
-//   continueButton: HTMLButtonElement;
-//   _content: HTMLElement;
-//   sum: HTMLElement;
-
-//   constructor(container: HTMLElement, protected events: IEvents, template: HTMLTemplateElement) {
-//     super(container, events);
-
-//     this.success = cloneTemplate(template);
-//     this._content.replaceChildren(this.success);
+  constructor(container: HTMLElement, protected events: IEvents) {
+    super(container);
     
-//     this.sum = this.success.querySelector('.order-success__description');
-//     this.continueButton = this.success.querySelector('.order-success__close');
-//     this.continueButton.addEventListener('click', (evt) => {
-//       this.events.emit('continue');
-//     })
-//   }
-//   setSum(data: number) {
-//     this.sum.textContent = "Списано " + String(data) + " синапсов"
-//   }
-// }
+    this.sum = this.container.querySelector('.order-success__description');
+    this.continueButton = this.container.querySelector('.order-success__close');
+    this.continueButton.addEventListener('click', (evt) => {
+      this.events.emit('continue');
+    })
+  }
+  setSum(data: number) {
+    this.sum.textContent = "Списано " + String(data) + " синапсов"
+  }
+  get success () {
+    return this.container
+  }
+}

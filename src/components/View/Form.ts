@@ -30,15 +30,6 @@ export class Form<T> extends Component<IFormState> {
             e.preventDefault();
             this.events.emit(`${this.container.name}:submit`);
         });
-
-        const closeButtonElement = this.container.querySelector(".modal__close");
-        this.handleEscUp = this.handleEscUp.bind(this);
-        closeButtonElement.addEventListener("click", this.close.bind(this));
-        this.container.addEventListener("mousedown", (evt) => {
-        if (evt.target === evt.currentTarget) {
-            this.close();
-        }
-        });
     }
 
     protected onInputChange(field: keyof T, value: string) {
@@ -55,22 +46,4 @@ export class Form<T> extends Component<IFormState> {
     set errors(value: string) {
         this.setText(this._errors, value);
     }
-
-    open() {
-        this.container.classList.add("modal_active");
-        document.addEventListener("keyup", this.handleEscUp);
-        this.events.emit("modal:open")
-    }
-
-    close() {
-        this.container.classList.remove("modal_active");
-        document.removeEventListener("keyup", this.handleEscUp);
-        this.events.emit("modal:close")
-    }
-
-    handleEscUp(evt: KeyboardEvent) {
-        if (evt.key === "Escape") {
-            this.close();
-        }
-    };
 }
